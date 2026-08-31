@@ -8,6 +8,7 @@ import (
 	"OpenLinkHub/src/cluster"
 	"OpenLinkHub/src/common"
 	"OpenLinkHub/src/config"
+	"OpenLinkHub/src/devices/arduinotemp"
 	"OpenLinkHub/src/devices/cc"
 	"OpenLinkHub/src/devices/ccxt"
 	"OpenLinkHub/src/devices/cduo"
@@ -346,7 +347,8 @@ func GetTemperatureProbes() interface{} {
 			device.ProductType == common.ProductTypeXC7 ||
 			device.ProductType == common.ProductTypeHydro ||
 			device.ProductType == common.ProductTypeCorsairOne ||
-			device.ProductType == common.ProductTypePlatinum {
+			device.ProductType == common.ProductTypePlatinum ||
+			device.ProductType == common.ProductTypeArduinoTemperature {
 			res := CallDeviceMethod(device.Serial, "GetTemperatureProbes")
 			if res != nil && len(res) > 0 {
 				val := res[0]
@@ -557,6 +559,10 @@ func Init() {
 	// Initialize general HID interface
 	if err := hid.Init(); err != nil {
 		logger.Log(logger.Fields{"error": err}).Fatal("Unable to initialize HID interface")
+	}
+
+	if device := arduinotemp.Init(config.GetConfig().ArduinoTemperaturePort, config.GetConfig().ArduinoTemperatureBaud); device != nil {
+		addDevice(device)
 	}
 
 	enum := hid.EnumFunc(func(info *hid.DeviceInfo) error {

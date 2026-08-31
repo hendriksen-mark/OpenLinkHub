@@ -217,6 +217,7 @@ const (
 	ProductTypeDongle               = 997
 	ProductTypeSlipstream           = 998
 	ProductTypeCluster              = 999
+	ProductTypeArduinoTemperature   = 1000
 )
 
 const (

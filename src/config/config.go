@@ -46,6 +46,8 @@ type Configuration struct {
 	EnableMotherboard         bool     `json:"enableMotherboard"`
 	MotherboardBiosOnExit     bool     `json:"motherboardBiosOnExit"`
 	MemoryRegisterOverride    []byte   `json:"memoryRegisterOverride"`
+	ArduinoTemperaturePort    string   `json:"arduinoTemperaturePort"`
+	ArduinoTemperatureBaud    int      `json:"arduinoTemperatureBaud"`
 }
 
 var (
@@ -72,6 +74,8 @@ var (
 		"enableMotherboard":         false,
 		"motherboardBiosOnExit":     false,
 		"memoryRegisterOverride":    make([]byte, 0),
+		"arduinoTemperaturePort":    "",
+		"arduinoTemperatureBaud":    115200,
 	}
 	systemService = true
 )
@@ -167,6 +171,8 @@ func upgradeFile(cfg string) {
 			EnableMotherboard:         false,
 			MotherboardBiosOnExit:     false,
 			MemoryRegisterOverride:    make([]byte, 0),
+			ArduinoTemperaturePort:    "",
+			ArduinoTemperatureBaud:    115200,
 		}
 		saveConfigSettings(value)
 	} else {
