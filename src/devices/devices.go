@@ -764,6 +764,7 @@ var deviceRegisterMap = map[uint16]Product{
 	7094:  {1, 0, "K70 PPO MINI", k70pmWU.Init, nil},                       // K70 PPO MINI
 	7165:  {1, 0, "K70 CORE RGB", k70core.Init, nil},                       // K70 CORE RGB
 	7167:  {1, 0, "K70 CORE RGB", k70core.Init, nil},                       // K70 CORE RGB
+	11018: {1, 0, "K70 CORE RGB", k70core.Init, nil},                       // K70 CORE RGB
 	11009: {1, 0, "K70 CORE TKL", k70coretkl.Init, nil},                    // K70 CORE TKL
 	11010: {1, 0, "K70 CORE TKL", k70coretklWU.Init, nil},                  // K70 CORE TKL WIRELESS
 	11028: {1, 0, "K70 PRO TKL", k70protkl.Init, nil},                      // K70 PRO TKL WIRELESS
@@ -875,11 +876,13 @@ var deviceRegisterMap = map[uint16]Product{
 	2626:  {3, 0, "HEADSET DONGLE", nil, headsetdongle.Init},               // Headset dongle
 	2675:  {3, 0, "HEADSET DONGLE", nil, headsetdongle.Init},               // Headset dongle
 	2641:  {3, 0, "VOID ELITE WIRELESS", nil, voidelitedongle.Init},        // Headset dongle
+	2645:  {3, 0, "VOID ELITE WIRELESS", nil, voidelitedongle.Init},        // Headset dongle (rev 0x0A55)
 	2622:  {3, 65346, "HEADSET DONGLE", nil, headsetdongle.Init},           // Headset dongle
 	2624:  {3, 65346, "HEADSET DONGLE", nil, headsetdongle.Init},           // Headset dongle
 	11015: {1, 0, "K65 PLUS WIRELESS", nil, k65plusWdongle.Init},           // K65 PLUS WIRELESS
 	2621:  {3, 65346, "VIRTUOSO SE", virtuosoSEWU.Init, nil},               // CORSAIR VIRTUOSO SE USB Gaming Headset
 	2623:  {3, 65346, "VIRTUOSO SE", virtuosoSEWU.Init, nil},               // CORSAIR VIRTUOSO SE USB Gaming Headset
+	10757: {3, 0, "VOID MAX WIRELESS V2", nil, voidV2dongle.Init},          // VOID MAX WIRELESS for XBOX Gaming Receiver
 	10760: {4, 0, "VOID WIRELESS V2", nil, voidV2dongle.Init},              // VOID WIRELESS V2
 	10770: {3, 0, "VOID MAX WIRELESS V2", nil, voidV2dongle.Init},          // VOID WIRELESS MAX V2
 	7168:  {0, 0, "CORSAIR LINK TM USB DONGLE", psudongle.Init, nil},       // CORSAIR LINK TM USB DONGLE

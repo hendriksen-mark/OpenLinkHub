@@ -1043,3 +1043,7 @@ func MaxHIDInputReport(rd []byte) int {
 	}
 	return maxSize
 }
+
+func ValidRGB(v float64) bool {
+	return v >= 0 && v <= 255 && math.Trunc(v) == v
+}
