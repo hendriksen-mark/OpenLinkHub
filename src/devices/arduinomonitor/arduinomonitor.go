@@ -23,6 +23,22 @@ const (
 	lolinS3Pid     = "1001"
 )
 
+// DiscoverPort finds the first serial port matching the LOLIN S3 USB VID/PID.
+func DiscoverPort() string {
+	ports, err := enumerator.GetDetailedPortsList()
+	if err != nil {
+		logger.Log(logger.Fields{"error": err}).Warn("Unable to enumerate Arduino monitor ports")
+		return ""
+	}
+
+	for _, port := range ports {
+		if strings.EqualFold(port.VID, lolinS3Vid) && strings.EqualFold(port.PID, lolinS3Pid) {
+			return port.Name
+		}
+	}
+	return ""
+}
+
 type report struct {
 	Temperatures []reading `json:"temperatures"`
 	Currents     []reading `json:"currents"`
