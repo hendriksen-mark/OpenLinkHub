@@ -48,6 +48,10 @@ type Configuration struct {
 	MemoryRegisterOverride    []byte   `json:"memoryRegisterOverride"`
 	ArduinoTemperaturePort    string   `json:"arduinoTemperaturePort"`
 	ArduinoTemperatureBaud    int      `json:"arduinoTemperatureBaud"`
+	ArduinoCurrentPort        string   `json:"arduinoCurrentPort"`
+	ArduinoCurrentBaud        int      `json:"arduinoCurrentBaud"`
+	ArduinoMonitorPort        string   `json:"arduinoMonitorPort"`
+	ArduinoMonitorBaud        int      `json:"arduinoMonitorBaud"`
 }
 
 var (
@@ -76,6 +80,10 @@ var (
 		"memoryRegisterOverride":    make([]byte, 0),
 		"arduinoTemperaturePort":    "",
 		"arduinoTemperatureBaud":    115200,
+		"arduinoCurrentPort":        "",
+		"arduinoCurrentBaud":        115200,
+		"arduinoMonitorPort":        "",
+		"arduinoMonitorBaud":        115200,
 	}
 	systemService = true
 )
@@ -173,6 +181,10 @@ func upgradeFile(cfg string) {
 			MemoryRegisterOverride:    make([]byte, 0),
 			ArduinoTemperaturePort:    "",
 			ArduinoTemperatureBaud:    115200,
+			ArduinoCurrentPort:        "",
+			ArduinoCurrentBaud:        115200,
+			ArduinoMonitorPort:        "",
+			ArduinoMonitorBaud:        115200,
 		}
 		saveConfigSettings(value)
 	} else {

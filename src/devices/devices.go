@@ -8,7 +8,7 @@ import (
 	"OpenLinkHub/src/cluster"
 	"OpenLinkHub/src/common"
 	"OpenLinkHub/src/config"
-	"OpenLinkHub/src/devices/arduinotemp"
+	"OpenLinkHub/src/devices/arduinomonitor"
 	"OpenLinkHub/src/devices/cc"
 	"OpenLinkHub/src/devices/ccxt"
 	"OpenLinkHub/src/devices/cduo"
@@ -348,7 +348,7 @@ func GetTemperatureProbes() interface{} {
 			device.ProductType == common.ProductTypeHydro ||
 			device.ProductType == common.ProductTypeCorsairOne ||
 			device.ProductType == common.ProductTypePlatinum ||
-			device.ProductType == common.ProductTypeArduinoTemperature {
+			device.ProductType == common.ProductTypeArduinoMonitor {
 			res := CallDeviceMethod(device.Serial, "GetTemperatureProbes")
 			if res != nil && len(res) > 0 {
 				val := res[0]
@@ -357,6 +357,21 @@ func GetTemperatureProbes() interface{} {
 		}
 	}
 	return probes
+}
+
+// GetCurrentSensors will return a list of Arduino current sensors
+func GetCurrentSensors() interface{} {
+	var sensors []interface{}
+	for _, device := range devices {
+		if device.ProductType != common.ProductTypeArduinoMonitor {
+			continue
+		}
+		res := CallDeviceMethod(device.Serial, "GetCurrentSensors")
+		if len(res) > 0 {
+			sensors = append(sensors, res[0].Interface())
+		}
+	}
+	return sensors
 }
 
 // UpdateDeviceMetrics will update device metrics
@@ -561,7 +576,20 @@ func Init() {
 		logger.Log(logger.Fields{"error": err}).Fatal("Unable to initialize HID interface")
 	}
 
-	if device := arduinotemp.Init(config.GetConfig().ArduinoTemperaturePort, config.GetConfig().ArduinoTemperatureBaud); device != nil {
+	monitorPort := config.GetConfig().ArduinoMonitorPort
+	monitorBaud := config.GetConfig().ArduinoMonitorBaud
+	if monitorPort == "" {
+		monitorPort = config.GetConfig().ArduinoTemperaturePort
+		monitorBaud = config.GetConfig().ArduinoTemperatureBaud
+	}
+	if monitorPort == "" {
+		monitorPort = config.GetConfig().ArduinoCurrentPort
+		monitorBaud = config.GetConfig().ArduinoCurrentBaud
+	}
+	if monitorPort == "" {
+		monitorPort = arduinomonitor.DiscoverPort()
+	}
+	if device := arduinomonitor.Init(monitorPort, monitorBaud); device != nil {
 		addDevice(device)
 	}
 

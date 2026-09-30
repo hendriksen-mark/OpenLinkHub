@@ -808,6 +808,25 @@ func getTemperatureProbes(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// getCurrentSensors returns Arduino current sensors
+func getCurrentSensors(w http.ResponseWriter, r *http.Request) {
+	resp := &Response{}
+	deviceId, valid := getVar("/api/devices/current/", r)
+	if !valid {
+		resp = &Response{Code: http.StatusOK, Status: 0, Data: language.GetValue("txtInvalidDeviceId")}
+		resp.Send(w)
+		return
+	}
+
+	results := devices.CallDeviceMethod(deviceId, "GetCurrentSensors")
+	if len(results) > 0 {
+		resp = &Response{Code: http.StatusOK, Status: 1, Data: results[0].Interface()}
+	} else {
+		resp = &Response{Code: http.StatusOK, Status: 0, Message: language.GetValue("txtInvalidDeviceId")}
+	}
+	resp.Send(w)
+}
+
 // getLanguageData will return language data
 func getLanguageData(w http.ResponseWriter, _ *http.Request) {
 	resp := &Response{
@@ -2644,6 +2663,7 @@ func setRoutes() http.Handler {
 	handleFunc(r, "/api/headset/getEqualizers/", http.MethodGet, getEqualizers)
 	handleFunc(r, "/api/language/", http.MethodGet, getLanguageData)
 	handleFunc(r, "/api/devices/probes/", http.MethodGet, getTemperatureProbes)
+	handleFunc(r, "/api/devices/current/", http.MethodGet, getCurrentSensors)
 	handleFunc(r, "/api/devices/mouse", http.MethodGet, getMouseDevice)
 	handleFunc(r, "/api/media/playback", http.MethodGet, getMediaPlayback)
 	handleFunc(r, "/api/media/", http.MethodGet, mediaPlaybackControl)
