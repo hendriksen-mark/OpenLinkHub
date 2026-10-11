@@ -1,20 +1,10 @@
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include "config.h"
 #include "sensors.h"
 #include "web_ui.h"
 
 unsigned long lastReport = 0;
-
-void printJsonString(const char *value)
-{
-  Serial.print('"');
-  while (*value != '\0')
-  {
-    if (*value == '"' || *value == '\\') Serial.print('\\');
-    Serial.print(*value++);
-  }
-  Serial.print('"');
-}
 
 void setup()
 {
@@ -31,36 +21,33 @@ void loop()
   if (millis() - lastReport < REPORT_INTERVAL_MS) return;
   lastReport = millis();
 
-  Serial.print("{\"temperatures\":[");
-  bool first = true;
+  JsonDocument doc;
+  JsonArray temperatures = doc["temperatures"].to<JsonArray>();
+  JsonArray currents = doc["currents"].to<JsonArray>();
+
   for (size_t index = 0; index < MAX_SENSORS; ++index)
   {
-    if (!sensors[index].enabled || sensors[index].type != SENSOR_TEMPERATURE) continue;
-    const float value = readTemperatureC(sensors[index]);
-    if (isnan(value) || isinf(value)) continue;
-    if (!first) Serial.print(',');
-    first = false;
-    Serial.print("{\"name\":");
-    printJsonString(sensors[index].name);
-    Serial.print(",\"value\":");
-    Serial.print(value, 2);
-    Serial.print('}');
+    const Sensor &sensor = sensors[index];
+    if (!sensor.enabled) continue;
+
+    if (sensor.type == SENSOR_TEMPERATURE)
+    {
+      const float value = readTemperatureC(sensor);
+      if (isnan(value) || isinf(value)) continue;
+      JsonObject item = temperatures.add<JsonObject>();
+      item["name"] = sensor.name;
+      item["value"] = roundf(value * 100.0f) / 100.0f;
+    }
+    else if (sensor.type == SENSOR_CURRENT)
+    {
+      const float value = readCurrentA(sensor);
+      if (isnan(value) || isinf(value)) continue;
+      JsonObject item = currents.add<JsonObject>();
+      item["name"] = sensor.name;
+      item["value"] = roundf(value * 1000.0f) / 1000.0f;
+    }
   }
 
-  Serial.print("],\"currents\":[");
-  first = true;
-  for (size_t index = 0; index < MAX_SENSORS; ++index)
-  {
-    if (!sensors[index].enabled || sensors[index].type != SENSOR_CURRENT) continue;
-    const float value = readCurrentA(sensors[index]);
-    if (isnan(value) || isinf(value)) continue;
-    if (!first) Serial.print(',');
-    first = false;
-    Serial.print("{\"name\":");
-    printJsonString(sensors[index].name);
-    Serial.print(",\"value\":");
-    Serial.print(value, 3);
-    Serial.print('}');
-  }
-  Serial.println("]}");
+  serializeJson(doc, Serial);
+  Serial.println();
 }
