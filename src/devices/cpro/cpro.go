@@ -163,6 +163,7 @@ var (
 	maxBufferSizePerRequest    = 50
 	defaultSpeedValue          = 100
 	maximumLedAmount           = 408
+	rgbFrameInterval           = 33 * time.Millisecond
 	i2cPrefix                  = "i2c"
 	rgbProfileUpgrade          = []string{
 		"arc",
@@ -2209,6 +2210,7 @@ func (d *Device) setDeviceColor(resetColor bool) {
 			sort.Ints(keys)
 
 			for {
+				frameStart := time.Now()
 				buff := make([]byte, 0)
 				select {
 				case <-d.activeRgb[i].Exit:
@@ -2322,7 +2324,9 @@ func (d *Device) setDeviceColor(resetColor bool) {
 					}
 				}
 				d.writeColor(buff, lc, externalHub.PortId)
-				time.Sleep(10 * time.Millisecond)
+				if remaining := rgbFrameInterval - time.Since(frameStart); remaining > 0 {
+					time.Sleep(remaining)
+				}
 			}
 		}(*externalHub, i)
 	}

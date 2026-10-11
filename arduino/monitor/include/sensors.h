@@ -15,15 +15,31 @@ struct Sensor
   char name[25];
   uint8_t pin;
   SensorType type;
-  float offsetVoltage;
-  float sensitivity;
   bool enabled;
+  // Only the member pair matching `type` is meaningful; the pairs share storage.
+  union
+  {
+    struct
+    {
+      float ntcResistance;
+      float ntcBeta;
+    };
+    struct
+    {
+      float offsetVoltage;
+      float sensitivity;
+    };
+  };
 };
 
+Sensor makeTemperatureSensor(const char *name, uint8_t pin, bool enabled);
+Sensor makeCurrentSensor(const char *name, uint8_t pin, bool enabled, float offsetVoltage, float sensitivity);
+
 extern Sensor sensors[MAX_SENSORS];
+extern float seriesResistor;
 
 bool isAdcPin(uint8_t pin);
 void loadSensors();
 void saveSensors();
-float readTemperatureC(uint8_t pin);
+float readTemperatureC(const Sensor &sensor);
 float readCurrentA(const Sensor &sensor);

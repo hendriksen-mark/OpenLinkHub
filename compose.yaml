@@ -1,0 +1,17 @@
+services:
+  openlinkhub:
+    image: ghcr.io/hendriksen-mark/openlinkhub:latest
+    container_name: openlinkhub
+    restart: unless-stopped
+    network_mode: host
+    privileged: true
+    volumes:
+      - type: bind
+        source: ./config.json
+        target: /opt/OpenLinkHub/config.json
+        bind:
+          create_host_path: false
+      - openlinkhub-database:/opt/OpenLinkHub/database
+
+volumes:
+  openlinkhub-database:

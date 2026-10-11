@@ -36,7 +36,7 @@ void loop()
   for (size_t index = 0; index < MAX_SENSORS; ++index)
   {
     if (!sensors[index].enabled || sensors[index].type != SENSOR_TEMPERATURE) continue;
-    const float value = readTemperatureC(sensors[index].pin);
+    const float value = readTemperatureC(sensors[index]);
     if (isnan(value) || isinf(value)) continue;
     if (!first) Serial.print(',');
     first = false;
