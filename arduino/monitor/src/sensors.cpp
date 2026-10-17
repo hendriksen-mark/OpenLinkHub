@@ -115,14 +115,24 @@ float readTemperatureC(const Sensor &sensor)
   return 1.0 / steinhart - 273.15;
 }
 
-float readCurrentA(const Sensor &sensor)
+static float readCurrentVoltage(const Sensor &sensor, uint8_t sampleCount)
 {
   uint32_t total = 0;
-  for (uint8_t sample = 0; sample < 16; ++sample)
+  for (uint8_t sample = 0; sample < sampleCount; ++sample)
   {
     total += analogRead(sensor.pin);
   }
-  const float voltage = (static_cast<float>(total) / 16.0) * ADC_REFERENCE_VOLTAGE / ADC_MAXIMUM;
+  return (static_cast<float>(total) / sampleCount) * ADC_REFERENCE_VOLTAGE / ADC_MAXIMUM;
+}
+
+float readCurrentA(const Sensor &sensor)
+{
+  const float voltage = readCurrentVoltage(sensor, 16);
   const float current = (voltage - sensor.offsetVoltage) / sensor.sensitivity;
   return current > 0 ? current : 0;
+}
+
+void calibrateCurrentSensor(Sensor &sensor)
+{
+  sensor.offsetVoltage = readCurrentVoltage(sensor, 64);
 }

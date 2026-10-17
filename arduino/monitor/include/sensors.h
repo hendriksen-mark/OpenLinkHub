@@ -43,3 +43,4 @@ void loadSensors();
 void saveSensors();
 float readTemperatureC(const Sensor &sensor);
 float readCurrentA(const Sensor &sensor);
+void calibrateCurrentSensor(Sensor &sensor);

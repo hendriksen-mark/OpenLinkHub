@@ -28,7 +28,16 @@ String escapeHtml(const char *value)
 
 String configurationPage()
 {
-  String page = F("<!doctype html><html><head><meta name=viewport content='width=device-width,initial-scale=1'><title>Arduino Monitor</title><style>body{font-family:system-ui,sans-serif;max-width:1000px;margin:2rem auto;padding:0 1rem;color:#17202a}table{width:100%;border-collapse:collapse}th,td{padding:.5rem;border-bottom:1px solid #d5d8dc;text-align:left}input,select{box-sizing:border-box;padding:.45rem;width:100%;font:inherit}input[type=checkbox]{width:auto}tr[data-t='0'] .cur,tr[data-t='0'] .tmp,tr[data-t='1'] .cur,tr[data-t='2'] .tmp{display:none}button{margin-top:1rem;background:#147a75;color:white;border:0;padding:.65rem 1rem;font:inherit;border-radius:4px}</style></head><body><h1>Arduino Monitor</h1><p>Configure NTC temperature sensors and ACS712-style current sensors. Current offset is volts at zero current; sensitivity is volts per amp.</p><form method=post action=/save><p><label>NTC series resistor, all temperature sensors (ohms)<input type=number step=1 min=1 name=sr value='");
+  String page = F("<!doctype html><html><head><meta name=viewport content='width=device-width,initial-scale=1'><title>Arduino Monitor</title><style>body{font-family:system-ui,sans-serif;max-width:1000px;margin:2rem auto;padding:0 1rem;color:#17202a}table{width:100%;border-collapse:collapse}th,td{padding:.5rem;border-bottom:1px solid #d5d8dc;text-align:left}input,select{box-sizing:border-box;padding:.45rem;width:100%;font:inherit}input[type=checkbox]{width:auto}tr[data-t='0'] .cur,tr[data-t='0'] .tmp,tr[data-t='1'] .cur,tr[data-t='2'] .tmp{display:none}button{margin-top:1rem;background:#147a75;color:white;border:0;padding:.65rem 1rem;font:inherit;border-radius:4px}.calibration button{margin-right:.5rem}</style></head><body><h1>Arduino Monitor</h1><p>Configure NTC temperature sensors and ACS712-style current sensors. Current offset is volts at zero current; sensitivity is volts per amp.</p>");
+  if (server.hasArg("calibrated"))
+  {
+    const int index = server.arg("calibrated").toInt();
+    if (index >= 0 && index < MAX_SENSORS)
+    {
+      page += "<p>Zero calibrated " + escapeHtml(sensors[index].name) + " at " + String(sensors[index].offsetVoltage, 4) + " V.</p>";
+    }
+  }
+  page += F("<form method=post action=/save><p><label>NTC series resistor, all temperature sensors (ohms)<input type=number step=1 min=1 name=sr value='");
   page += String(seriesResistor, 0);
   page += F("'></label></p><table><tr><th>Enabled</th><th>Type</th><th>Name</th><th>GPIO</th><th>Offset (V) / NTC R25 (ohms)</th><th>Sensitivity (V/A) / NTC Beta</th></tr>");
   for (size_t index = 0; index < MAX_SENSORS; ++index)
@@ -37,7 +46,15 @@ String configurationPage()
     if (sensors[index].enabled) page += " checked";
     page += "></td><td><select name=t" + String(index) + " onchange=\"this.closest('tr').dataset.t=this.value\">" + String("<option value=0") + String(sensors[index].type == SENSOR_DISABLED ? " selected" : "") + ">Not used</option><option value=1" + String(sensors[index].type == SENSOR_TEMPERATURE ? " selected" : "") + ">Temperature</option><option value=2" + String(sensors[index].type == SENSOR_CURRENT ? " selected" : "") + ">Current</option></select></td><td><input maxlength=24 name=n" + String(index) + " value='" + escapeHtml(sensors[index].name) + "'></td><td><input type=number min=1 max=" + String(MAX_SENSORS) + " name=p" + String(index) + " value='" + String(sensors[index].pin) + "'></td><td><input class=cur type=number step=0.001 min=0 max=3.3 name=o" + String(index) + " value='" + String(sensors[index].type == SENSOR_CURRENT ? sensors[index].offsetVoltage : 0, 4) + "'><input class=tmp type=number step=1 min=1 name=r" + String(index) + " value='" + String(sensors[index].type == SENSOR_TEMPERATURE ? sensors[index].ntcResistance : NTC_NOMINAL_RESISTANCE, 0) + "'></td><td><input class=cur type=number step=0.001 min=0.001 name=s" + String(index) + " value='" + String(sensors[index].type == SENSOR_CURRENT ? sensors[index].sensitivity : 0, 4) + "'><input class=tmp type=number step=1 min=1 name=b" + String(index) + " value='" + String(sensors[index].type == SENSOR_TEMPERATURE ? sensors[index].ntcBeta : NTC_BETA, 0) + "'></td></tr>";
   }
-  page += F("</table><button type=submit>Save sensors</button></form></body></html>");
+  page += F("</table><div class=calibration>");
+  for (size_t index = 0; index < MAX_SENSORS; ++index)
+  {
+    if (sensors[index].enabled && sensors[index].type == SENSOR_CURRENT)
+    {
+      page += "<button type=submit formmethod=post formaction=/calibrate formnovalidate name=i value=" + String(index) + " onclick=\"return confirm('Disconnect the load and ensure current is 0 A before calibrating.')\">Calibrate 0 A: " + escapeHtml(sensors[index].name) + "</button>";
+    }
+  }
+  page += F("</div><button type=submit>Save sensors</button></form></body></html>");
   return page;
 }
 
@@ -75,6 +92,23 @@ void handleSave()
   server.send(303);
 }
 
+void handleCalibrate()
+{
+  const String indexArg = server.arg("i");
+  const int index = indexArg.toInt();
+  if (indexArg.length() == 0 || String(index) != indexArg || index < 0 || index >= MAX_SENSORS ||
+      !sensors[index].enabled || sensors[index].type != SENSOR_CURRENT || !isAdcPin(sensors[index].pin))
+  {
+    server.send(400, "text/plain", "Invalid current sensor");
+    return;
+  }
+
+  calibrateCurrentSensor(sensors[index]);
+  saveSensors();
+  server.sendHeader("Location", "/?calibrated=" + String(index));
+  server.send(303);
+}
+
 void beginWebUi()
 {
   WiFi.mode(WIFI_AP);
@@ -83,6 +117,7 @@ void beginWebUi()
   Serial.println(WiFi.softAPIP());
   server.on("/", HTTP_GET, []() { server.send(200, "text/html", configurationPage()); });
   server.on("/save", HTTP_POST, handleSave);
+  server.on("/calibrate", HTTP_POST, handleCalibrate);
   server.begin();
 }
 
