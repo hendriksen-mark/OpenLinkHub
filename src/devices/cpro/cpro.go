@@ -2265,6 +2265,11 @@ func (d *Device) setDeviceColor(resetColor bool) {
 								r.Temperature(float64(d.GpuTemp))
 								buff = append(buff, r.Output...)
 							}
+						case "cpu-gpu-temperature":
+							{
+								r.Temperature(math.Max(float64(d.CpuTemp), float64(d.GpuTemp)))
+								buff = append(buff, r.Output...)
+							}
 						case "colorpulse":
 							{
 								r.Colorpulse(&startTime)

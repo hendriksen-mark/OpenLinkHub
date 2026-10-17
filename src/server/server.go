@@ -2493,6 +2493,7 @@ func uiSettings(w http.ResponseWriter, _ *http.Request) {
 		"cpu-temperature",
 		"flickering",
 		"gpu-temperature",
+		"cpu-gpu-temperature",
 		"off",
 		"rainbow",
 		"pastelrainbow",
