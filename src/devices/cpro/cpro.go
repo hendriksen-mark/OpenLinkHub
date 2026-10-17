@@ -182,6 +182,7 @@ var (
 		"cpu-temperature",
 		"flickering",
 		"gpu-temperature",
+		"cpu-gpu-temperature",
 		"gradient",
 		"off",
 		"rain",

@@ -17,6 +17,7 @@ import (
 	"OpenLinkHub/src/temperatures"
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -150,6 +151,7 @@ var (
 		"cpu-temperature",
 		"flickering",
 		"gpu-temperature",
+		"cpu-gpu-temperature",
 		"gradient",
 		"keyboard",
 		"off",
@@ -689,7 +691,7 @@ func (d *Device) saveDeviceProfile() {
 		if d.DeviceProfile.Keyboards == nil {
 			d.DeviceProfile.Keyboards = make(map[string]*keyboards.Keyboard)
 		}
-		
+
 		needsUpgrade := len(d.DeviceProfile.Keyboards) == 0
 		for name, saved := range d.DeviceProfile.Keyboards {
 			expected := layout
@@ -1868,6 +1870,12 @@ func (d *Device) setDeviceColor() {
 						r.MinTemp = profile.MinTemp
 						r.MaxTemp = profile.MaxTemp
 						r.Temperature(float64(d.GpuTemp))
+					}
+				case "cpu-gpu-temperature":
+					{
+						r.MinTemp = profile.MinTemp
+						r.MaxTemp = profile.MaxTemp
+						r.Temperature(math.Max(float64(d.CpuTemp), float64(d.GpuTemp)))
 					}
 				case "colorpulse":
 					{

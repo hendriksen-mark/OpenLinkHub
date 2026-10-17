@@ -329,6 +329,7 @@ var (
 		"cpu-temperature",
 		"flickering",
 		"gpu-temperature",
+		"cpu-gpu-temperature",
 		"gradient",
 		"liquid-temperature",
 		"led",
@@ -5095,6 +5096,11 @@ func (d *Device) generateRgbEffect(k int, channels uint8, startTime *time.Time, 
 		{
 			r.Temperature(float64(d.GpuTemp))
 			buff = r.Output
+		}
+	case "cpu-gpu-temperature":
+		{
+			r.Temperature(math.Max(float64(d.CpuTemp), float64(d.GpuTemp)))
+			buff = append(buff, r.Output...)
 		}
 	case "probe-temperature":
 		{

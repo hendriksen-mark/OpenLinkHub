@@ -12,6 +12,7 @@ import (
 	"OpenLinkHub/src/temperatures"
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -128,6 +129,7 @@ var (
 		"cpu-temperature",
 		"flickering",
 		"gpu-temperature",
+		"cpu-gpu-temperature",
 		"gradient",
 		"off",
 		"rainbow",
@@ -1257,7 +1259,7 @@ func (d *Device) setDeviceColor(resetColor bool) {
 	if d.DeviceProfile.RgbOff {
 		return
 	}
-	
+
 	// Are all devices under static mode?
 	// In static mode, we only need to send color once;
 	// there is no need for continuous packet sending.
@@ -1395,6 +1397,13 @@ func (d *Device) setDeviceColor(resetColor bool) {
 							r.MinTemp = profile.MinTemp
 							r.MaxTemp = profile.MaxTemp
 							r.Temperature(float64(d.GpuTemp))
+							buff[d.Devices[k].PortId] = append(buff[d.Devices[k].PortId], r.Output...)
+						}
+					case "cpu-gpu-temperature":
+						{
+							r.MinTemp = profile.MinTemp
+							r.MaxTemp = profile.MaxTemp
+							r.Temperature(math.Max(float64(d.CpuTemp), float64(d.GpuTemp)))
 							buff[d.Devices[k].PortId] = append(buff[d.Devices[k].PortId], r.Output...)
 						}
 					case "colorpulse":

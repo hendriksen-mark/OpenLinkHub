@@ -148,6 +148,7 @@ var (
 		"colorwarp",
 		"cpu-temperature",
 		"gpu-temperature",
+		"cpu-gpu-temperature",
 		"mouse",
 		"off",
 		"rainbow",

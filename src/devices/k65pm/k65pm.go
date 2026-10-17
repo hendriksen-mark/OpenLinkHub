@@ -18,6 +18,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -148,6 +149,7 @@ var (
 		"cpu-temperature",
 		"flickering",
 		"gpu-temperature",
+		"cpu-gpu-temperature",
 		"gradient",
 		"keyboard",
 		"off",
@@ -1809,6 +1811,13 @@ func (d *Device) setDeviceColor() {
 						r.MinTemp = profile.MinTemp
 						r.MaxTemp = profile.MaxTemp
 						r.Temperature(float64(d.GpuTemp))
+						buff = append(buff, r.Output...)
+					}
+				case "cpu-gpu-temperature":
+					{
+						r.MinTemp = profile.MinTemp
+						r.MaxTemp = profile.MaxTemp
+						r.Temperature(math.Max(float64(d.CpuTemp), float64(d.GpuTemp)))
 						buff = append(buff, r.Output...)
 					}
 				case "colorpulse":

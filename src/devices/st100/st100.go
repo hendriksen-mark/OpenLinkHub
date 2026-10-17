@@ -16,6 +16,7 @@ import (
 	"OpenLinkHub/src/temperatures"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"slices"
@@ -123,6 +124,7 @@ var (
 		"cpu-temperature",
 		"flickering",
 		"gpu-temperature",
+		"cpu-gpu-temperature",
 		"gradient",
 		"off",
 		"rainbow",
@@ -1271,7 +1273,7 @@ func (d *Device) setDeviceColor() {
 		logger.Log(logger.Fields{}).Info("Exiting setDeviceColor() due to RGB being set to Off")
 		return
 	}
-	
+
 	if d.DeviceProfile.RGBProfile == "stand" {
 		var buf = make([]byte, colorPacketLength)
 		for _, rows := range d.DeviceProfile.Stand.Row {
@@ -1432,6 +1434,13 @@ func (d *Device) setDeviceColor() {
 						r.MinTemp = profile.MinTemp
 						r.MaxTemp = profile.MaxTemp
 						r.Temperature(float64(d.GpuTemp))
+						buff = append(buff, r.Output...)
+					}
+				case "cpu-gpu-temperature":
+					{
+						r.MinTemp = profile.MinTemp
+						r.MaxTemp = profile.MaxTemp
+						r.Temperature(math.Max(float64(d.CpuTemp), float64(d.GpuTemp)))
 						buff = append(buff, r.Output...)
 					}
 				case "colorpulse":

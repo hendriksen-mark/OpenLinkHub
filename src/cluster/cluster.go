@@ -11,6 +11,7 @@ import (
 	"OpenLinkHub/src/rgb"
 	"OpenLinkHub/src/temperatures"
 	"encoding/json"
+	"math"
 	"math/rand"
 	"os"
 	"slices"
@@ -62,6 +63,7 @@ func Init() *Device {
 			"cpu-temperature",
 			"flickering",
 			"gpu-temperature",
+			"cpu-gpu-temperature",
 			"gradient",
 			"marquee",
 			"nebula",
@@ -561,6 +563,11 @@ func (d *Device) generateRgbEffect(channels int, startTime *time.Time, rgbProfil
 		{
 			r.Temperature(float64(d.GpuTemp))
 			buff = r.Output
+		}
+	case "cpu-gpu-temperature":
+		{
+			r.Temperature(math.Max(float64(d.CpuTemp), float64(d.GpuTemp)))
+			buff = append(buff, r.Output...)
 		}
 	case "colorpulse":
 		{

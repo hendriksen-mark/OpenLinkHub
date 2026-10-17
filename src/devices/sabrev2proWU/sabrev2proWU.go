@@ -21,8 +21,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sstallion/go-hid"
 	"strconv"
+
+	"github.com/sstallion/go-hid"
 )
 
 const (
@@ -156,6 +157,7 @@ var (
 		"colorwarp",
 		"cpu-temperature",
 		"gpu-temperature",
+		"cpu-gpu-temperature",
 		"mouse",
 		"off",
 		"rainbow",
